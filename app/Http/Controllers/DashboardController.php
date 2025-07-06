@@ -34,6 +34,10 @@ class DashboardController extends Controller
         $qrPavlodar = QrCodes::query()->select()->where('id', 14)->first();
         $config = Configuration::query()->select('address', 'title_text', 'address_two', 'whats_app')->first();
         $cities = City::query()->select('title')->get();
+        $chinaAddress = City::query()->select('title_kz')->where('title', Auth::user()->city)->first();
+        if(!$chinaAddress){
+            $chinaAddress = City::query()->select('title_kz')->where('title', 'ALM001 - Алма сити')->first();
+        }
         if (Auth::user()->is_active === 1 && Auth::user()->type === null){
             $tracks = ClientTrackList::query()
                 ->leftJoin('track_lists', 'client_track_lists.track_code', '=', 'track_lists.track_code')
@@ -48,7 +52,7 @@ class DashboardController extends Controller
 
             $messages = Message::all();
 
-            return view('dashboard')->with(compact('tracks', 'count', 'messages', 'config'));
+            return view('dashboard')->with(compact('tracks', 'count', 'messages', 'config', 'chinaAddress'));
         }elseif (Auth::user()->is_active === 1 && Auth::user()->type === 'stock'){
             $count = TrackList::query()->whereDate('to_china', Carbon::today())->count();
             return view('stock', ['count' => $count, 'config' => $config, 'qr' => $qrChina]);
